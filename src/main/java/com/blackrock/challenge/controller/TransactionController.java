@@ -3,10 +3,13 @@ package com.blackrock.challenge.controller;
 import com.blackrock.challenge.model.IndexFundReturn;
 import com.blackrock.challenge.model.IndexFundReturnRequest;
 import com.blackrock.challenge.model.KPeriodResult;
+import com.blackrock.challenge.model.NpsReturn;
+import com.blackrock.challenge.model.NpsReturnRequest;
 import com.blackrock.challenge.model.Transaction;
 import com.blackrock.challenge.model.TransactionFilterRequest;
 import com.blackrock.challenge.model.TransactionFilterResponse;
 import com.blackrock.challenge.service.IndexFundService;
+import com.blackrock.challenge.service.NpsService;
 import com.blackrock.challenge.service.TemporalRuleService;
 import com.blackrock.challenge.service.TransactionService;
 import org.springframework.web.bind.annotation.*;
@@ -20,13 +23,16 @@ public class TransactionController {
     private final TransactionService transactionService;
     private final TemporalRuleService temporalRuleService;
     private final IndexFundService indexFundService;
+    private final NpsService npsService;
 
     public TransactionController(TransactionService transactionService,
                                  TemporalRuleService temporalRuleService,
-                                 IndexFundService indexFundService) {
+                                 IndexFundService indexFundService,
+                                 NpsService npsService) {
         this.transactionService = transactionService;
         this.temporalRuleService = temporalRuleService;
         this.indexFundService = indexFundService;
+        this.npsService = npsService;
     }
 
     @PostMapping("/parse")
@@ -72,6 +78,21 @@ public class TransactionController {
         return indexFundService.calculateReturns(
                 request.getKResults(),
                 request.getAge(),
+                request.getInflation()
+        );
+    }
+
+    /**
+     * Calculates NPS returns from k period results.
+     */
+    @PostMapping("/returns/nps")
+    public List<NpsReturn> calculateNpsReturns(
+            @RequestBody NpsReturnRequest request) {
+
+        return npsService.calculateReturns(
+                request.getKResults(),
+                request.getAge(),
+                request.getAnnualIncome(),
                 request.getInflation()
         );
     }
