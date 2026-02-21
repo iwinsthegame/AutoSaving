@@ -8,9 +8,11 @@ import com.blackrock.challenge.model.NpsReturnRequest;
 import com.blackrock.challenge.model.Transaction;
 import com.blackrock.challenge.model.TransactionFilterRequest;
 import com.blackrock.challenge.model.TransactionFilterResponse;
+import com.blackrock.challenge.model.TransactionValidationResult;
 import com.blackrock.challenge.service.IndexFundService;
 import com.blackrock.challenge.service.NpsService;
 import com.blackrock.challenge.service.TemporalRuleService;
+import com.blackrock.challenge.service.TransactionValidationService;
 import com.blackrock.challenge.service.TransactionService;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,15 +26,18 @@ public class TransactionController {
     private final TemporalRuleService temporalRuleService;
     private final IndexFundService indexFundService;
     private final NpsService npsService;
+    private final TransactionValidationService transactionValidationService;
 
     public TransactionController(TransactionService transactionService,
                                  TemporalRuleService temporalRuleService,
                                  IndexFundService indexFundService,
-                                 NpsService npsService) {
+                                 NpsService npsService,
+                                 TransactionValidationService transactionValidationService) {
         this.transactionService = transactionService;
         this.temporalRuleService = temporalRuleService;
         this.indexFundService = indexFundService;
         this.npsService = npsService;
+        this.transactionValidationService = transactionValidationService;
     }
 
     @PostMapping("/parse")
@@ -95,5 +100,12 @@ public class TransactionController {
                 request.getAnnualIncome(),
                 request.getInflation()
         );
+    }
+
+    @PostMapping("/validate")
+    public TransactionValidationResult validateTransactions(
+            @RequestBody List<Transaction> transactions) {
+
+        return transactionValidationService.validate(transactions);
     }
 }
