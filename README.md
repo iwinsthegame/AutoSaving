@@ -124,5 +124,5 @@ http://localhost:5477
 
 ## Submission Artifacts
 - GitHub Repository: https://github.com/iwinsthegame/AutoSaving
-- Docker Image: wavmoon/auto-savings:1.0
-- Demo Video: ..
+- Docker Image: https://hub.docker.com/r/wavmoon/auto-savings
+- Demo Video: https://youtu.be/tHck0aV1p2w
