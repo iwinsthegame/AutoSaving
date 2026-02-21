@@ -1,7 +1,10 @@
 package com.blackrock.challenge.controller;
 
-import com.blackrock.challenge.model.Expense;
+import com.blackrock.challenge.model.KPeriodResult;
 import com.blackrock.challenge.model.Transaction;
+import com.blackrock.challenge.model.TransactionFilterRequest;
+import com.blackrock.challenge.model.TransactionFilterResponse;
+import com.blackrock.challenge.service.TemporalRuleService;
 import com.blackrock.challenge.service.TransactionService;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,16 +15,44 @@ import java.util.List;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final TemporalRuleService temporalRuleService;
 
-    public TransactionController(TransactionService transactionService) {
+    public TransactionController(TransactionService transactionService,
+                                 TemporalRuleService temporalRuleService) {
         this.transactionService = transactionService;
+        this.temporalRuleService = temporalRuleService;
+    }
+
+    @PostMapping("/parse")
+    public List<Transaction> parseTransactions(@RequestBody List<com.blackrock.challenge.model.Expense> expenses) {
+        return transactionService.parseExpenses(expenses);
     }
 
     /**
-     * Parses expenses into transactions by calculating ceiling and remanent.
+     * Applies q + p + k rules and returns grouped savings per k period.
      */
-    @PostMapping("/parse")
-    public List<Transaction> parseTransactions(@RequestBody List<Expense> expenses) {
-        return transactionService.parseExpenses(expenses);
+    @PostMapping("/filter")
+    public TransactionFilterResponse filterTransactions(
+            @RequestBody TransactionFilterRequest request) {
+
+        List<Transaction> afterQ =
+                temporalRuleService.applyQRules(
+                        request.getTransactions(),
+                        request.getQPeriods()
+                );
+
+        List<Transaction> afterP =
+                temporalRuleService.applyPRules(
+                        afterQ,
+                        request.getPPeriods()
+                );
+
+        List<KPeriodResult> results =
+                temporalRuleService.applyKRules(
+                        afterP,
+                        request.getKPeriods()
+                );
+
+        return new TransactionFilterResponse(results);
     }
 }
