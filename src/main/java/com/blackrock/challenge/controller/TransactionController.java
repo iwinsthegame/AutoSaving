@@ -1,9 +1,12 @@
 package com.blackrock.challenge.controller;
 
+import com.blackrock.challenge.model.IndexFundReturn;
+import com.blackrock.challenge.model.IndexFundReturnRequest;
 import com.blackrock.challenge.model.KPeriodResult;
 import com.blackrock.challenge.model.Transaction;
 import com.blackrock.challenge.model.TransactionFilterRequest;
 import com.blackrock.challenge.model.TransactionFilterResponse;
+import com.blackrock.challenge.service.IndexFundService;
 import com.blackrock.challenge.service.TemporalRuleService;
 import com.blackrock.challenge.service.TransactionService;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +19,14 @@ public class TransactionController {
 
     private final TransactionService transactionService;
     private final TemporalRuleService temporalRuleService;
+    private final IndexFundService indexFundService;
 
     public TransactionController(TransactionService transactionService,
-                                 TemporalRuleService temporalRuleService) {
+                                 TemporalRuleService temporalRuleService,
+                                 IndexFundService indexFundService) {
         this.transactionService = transactionService;
         this.temporalRuleService = temporalRuleService;
+        this.indexFundService = indexFundService;
     }
 
     @PostMapping("/parse")
@@ -54,5 +60,19 @@ public class TransactionController {
                 );
 
         return new TransactionFilterResponse(results);
+    }
+
+    /**
+     * Calculates Index Fund returns from k period results.
+     */
+    @PostMapping("/returns/index")
+    public List<IndexFundReturn> calculateIndexFundReturns(
+            @RequestBody IndexFundReturnRequest request) {
+
+        return indexFundService.calculateReturns(
+                request.getKResults(),
+                request.getAge(),
+                request.getInflation()
+        );
     }
 }
